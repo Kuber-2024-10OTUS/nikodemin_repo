@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mycm
+data:
+  file: |
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce at feugiat enim. Etiam libero neque, feugiat ac posuere sit amet, sagittis lobortis tellus. Mauris aliquam fermentum aliquet. Quisque felis augue, maximus at justo eget, sollicitudin varius ligula. Duis suscipit elementum enim. Morbi ut posuere mauris. Vivamus in scelerisque enim, non sollicitudin neque.
+    Proin nec sapien condimentum, tristique diam ut, vulputate lorem. Maecenas ut dapibus turpis. Donec quis nunc sed tellus iaculis efficitur. Quisque et malesuada neque. Proin libero neque, fringilla sit amet fermentum a, porta vel turpis. Nunc hendrerit tempus lectus ac pretium. Ut interdum pulvinar ante sit amet rutrum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
