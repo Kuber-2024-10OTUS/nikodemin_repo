@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      serviceAccountName: monitoring
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /homework
+        - name: nginx-conf
+          mountPath: "/etc/nginx/nginx.conf"
+          subPath: nginx.conf
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5     
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", "-c", "rm -f /homework/index.html"] 
+      initContainers:
+      - name: get-page
+        image: busybox:1.28
+        command:
+        - wget
+        - "-O"
+        - "/init/index.html"
+        - https://habr.com/ru/companies/spring_aio/articles/858166/
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /init
+      - name: get-metrics
+        image: curlimages/curl:8.11.1
+        command: ['sh', '-c', "cd /var/run/secrets/kubernetes.io/serviceaccount && TOKEN=$(cat token) && curl --cacert ca.crt --header \"Authorization: Bearer ${TOKEN}\" -X GET \"https://kubernetes.default.svc/apis/metrics.k8s.io/v1beta1/nodes/minikube\" >> /init/metrics.html"]
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /init
+      volumes:
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: nginx-conf
+        configMap: 
+          name: nginx-conf
+      
+
+
