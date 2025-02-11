@@ -1,0 +1,15 @@
+{{- range $role := .Values.roles }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $role.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ $role.name }}
+subjects:
+- kind: ServiceAccount
+  name: {{ $role.saName }}
+  namespace: {{ $.Values.namespace }}
+---
+{{ end }}
