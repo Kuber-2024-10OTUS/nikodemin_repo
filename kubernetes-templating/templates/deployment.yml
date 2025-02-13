@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.names.deployment }}
+  namespace: {{ .Values.namespace}}
+  labels:
+    app: {{ .Values.names.app }}
+spec:
+  replicas: {{ .Values.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ .Values.names.app }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+       maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.names.app }}
+    spec:
+      serviceAccountName: {{ .Values.nginxSaName }}
+      containers:
+      - name: nginx
+        image: nginx:{{ .Values.versions.nginx }}
+        ports:
+        - containerPort: {{ .Values.ports.containerPort }}
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /homework
+        - name: nginx-conf
+          mountPath: "/etc/nginx/nginx.conf"
+          subPath: nginx.conf
+      {{- if .Values.readinessProbeEnabled }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5     
+      {{- end }}
+        lifecycle:
+          preStop:
+            exec:
+              command: ["/bin/bash", "-c", "rm -f /homework/index.html"] 
+      initContainers:
+      - name: get-page
+        image: busybox:{{ .Values.versions.busybox }}
+        command:
+        - wget
+        - "-O"
+        - "/init/index.html"
+        - {{ .Values.pageToShow }}
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /init
+      - name: get-metrics
+        image: curlimages/curl:{{ .Values.versions.curl }}
+        command: ['sh', '-c', "cd /var/run/secrets/kubernetes.io/serviceaccount && TOKEN=$(cat token) && curl --cacert ca.crt --header \"Authorization: Bearer ${TOKEN}\" -X GET \"https://kubernetes.default.svc/apis/metrics.k8s.io/v1beta1/nodes/minikube\" >> /init/metrics.html"]
+        volumeMounts:
+        - name: cache-volume
+          mountPath: /init
+      volumes:
+      - name: cache-volume
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: nginx-conf
+        configMap: 
+          name: nginx-conf
+      
+
+

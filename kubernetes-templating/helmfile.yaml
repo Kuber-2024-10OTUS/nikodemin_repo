@@ -1,0 +1,67 @@
+environments:
+  dev:
+  prod:
+
+---
+
+releases:
+  - name: kafka
+    chart: bitnami/kafka
+    namespace: prod
+    version: 22.0.0
+    values:
+      - enabled: true
+        controller:  
+          replicaCount: 0
+          automountServiceAccountToken: true
+        broker:
+          replicaCount: 5
+          persistence:
+            size: 1Gi
+          automountServiceAccountToken: true
+        kraft:
+          enabled: false
+        zookeeper:
+          enabled: true
+          persistence:
+            size: 1Gi
+        listeners:
+          client:
+            protocol: SASL_PLAINTEXT
+          controller:
+            protocol: SASL_PLAINTEXT
+          interbroker:
+            protocol: SASL_PLAINTEXT
+
+  - name: kafka
+    chart: bitnami/kafka
+    namespace: dev
+    version: 31.3.1
+    values:
+      - enabled: true
+        controller:  
+          replicaCount: 0
+          automountServiceAccountToken: true
+        broker:
+          replicaCount: 1
+          persistence:
+            size: 1Gi
+          automountServiceAccountToken: true
+        kraft:
+          enabled: false
+        zookeeper:
+          enabled: true
+          persistence:
+            size: 1Gi
+        listeners:
+          client:
+            protocol: PLAINTEXT
+          controller:
+            protocol: PLAINTEXT
+          interbroker:
+            protocol: PLAINTEXT
+
+
+repositories:
+  - name: bitnami
+    url: https://charts.bitnami.com/bitnami

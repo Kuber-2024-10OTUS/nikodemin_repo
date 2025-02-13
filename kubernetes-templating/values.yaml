@@ -1,0 +1,47 @@
+namespace: homework
+roles: 
+  - saName: cd
+    name: admin
+  - saName: monitoring
+    name: view-metrics
+    rules:
+      - apiGroups: 
+          - metrics.k8s.io
+        resources: 
+          - pods
+          - nodes
+        verbs:
+          - get
+          - list
+          - watch
+names:
+  app: my-test-app
+  service: test-service
+  deployment: test-deployment
+  ingress: test-ingress
+replicaCount: 3
+versions:
+  nginx: 1.14.2
+  busybox: 1.28
+  curl: 8.11.1
+ports:
+  containerPort: 8080
+  exposedPort: 9090
+readinessProbeEnabled: true
+nginxSaName: monitoring
+pageToShow: https://habr.com/ru/companies/automacon/articles/881120/
+nginxConf: |
+  user nginx;
+  worker_processes  1;
+  events {
+    worker_connections  10240;
+  }
+  http {
+    server {
+        listen       %d;
+        server_name  localhost;
+        location / {
+          root   /homework;
+      }
+    }
+  }
